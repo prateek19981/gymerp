@@ -10,12 +10,8 @@ export const YourOrders = () => {
   const orderss = JSON.parse(user)?.orders;
 
   const token = sessionStorage.getItem("Auth Token");
-  console.log("in your orders", token);
-
-  console.log({ orderss });
 
   useEffect(() => {
-    console.log("use effect");
     if (!token) {
       navigate("/login");
     }

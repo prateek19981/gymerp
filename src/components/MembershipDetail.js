@@ -11,17 +11,13 @@ const MembershipDetail = ({ isLoggedIn }) => {
   let currUser = sessionStorage.getItem("currentUser");
   currUser = JSON.parse(currUser);
   const activeMemberships = currUser?.activeMemberships || {};
-  console.log({ activeMemberships });
 
   const membershipDetail = membershipList.find((item) => item.id === id);
-  console.log({ membershipDetail });
 
   const handleAddToCart = function () {
-    console.log("here", currUser);
     dispatch(addToCart({ membershipDetail, currUser }));
   };
   const bool = Object.keys(activeMemberships).length !== 0;
-  console.log({ bool });
 
   return (
     <Stack
@@ -94,7 +90,6 @@ const MembershipDetail = ({ isLoggedIn }) => {
               if (Object.keys(activeMemberships).length === 0) {
                 handleAddToCart();
               } else {
-                console.log("hmm");
                 return;
               }
             }}

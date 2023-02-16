@@ -1,13 +1,6 @@
 import React from "react";
 import { Stack, Box, Grid, Typography } from "@mui/material";
-import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import MailIcon from "@mui/icons-material/Mail";
+
 import ActiveIcon from "../../assets/icons/active.png";
 import ExpiredIcon from "../../assets/icons/expired.png";
 import CollectionIcon from "../../assets/icons/todayCollection.png";
@@ -23,6 +16,7 @@ import TabPanel from "../../components/TabPanel";
 import MembershipTab from "../../components/MembershipTab";
 
 import { Pie } from "react-chartjs-2";
+import { SideNav } from "./SideNav";
 
 const Dashboard = () => {
   ChartJS.register(ArcElement, Tooltip, Legend);
@@ -40,53 +34,14 @@ const Dashboard = () => {
     ],
   };
 
-  const list = () => (
-    <Box
-      sx={{
-        padding: "2%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-      role="presentation">
-      <List>
-        {["Dashboard", "Members", "Engage", "Memberships"].map(
-          (text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          )
-        )}
-      </List>
-      <Divider />
-      <List>
-        {["Business Insights", "Enquires", "Profile"].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
   function handleChange(e, val) {
     console.log(val);
     setTabVal(val);
   }
   return (
-    <Box>
+    <Box display="flex" width="100%">
       <Stack direction="row" height="100%" width="100%">
-        <Stack
+        {/* <Stack
           sx={{
             backgroundColor: "white",
             width: "17%",
@@ -96,14 +51,19 @@ const Dashboard = () => {
             padding: "2%",
             zIndex: 1,
           }}>
-          {list()}
-        </Stack>
-        <Stack width="100%">
+          <SideNav />
+        </Stack> */}
+        <Stack
+          sx={{
+            height: { xs: "5%", md: "10%", sm: "100%", lg: "100%" },
+            width: { xs: "100%", md: "100%", sm: "100%", lg: "100%" },
+          }}>
           <Grid
             container
             padding={2}
             sx={{
-              height: { xs: "5%", md: "10%", sm: "10%", lg: "20%" },
+              height: { xs: "5%", md: "100vh", sm: "10%", lg: "20%" },
+              width: { xs: "100%", md: "80vw", sm: "100%", lg: "100%" },
             }}>
             <Grid xs={3}>
               <Stack
@@ -202,7 +162,8 @@ const Dashboard = () => {
             container
             padding={2}
             sx={{
-              height: { xs: "5%", md: "10%", sm: "10%", lg: "20%" },
+              height: { xs: "5%", md: "100vh", sm: "10%", lg: "20%" },
+              width: { xs: "100%", md: "80vw", sm: "100%", lg: "100%" },
             }}>
             <Grid xs={3}>
               <Stack

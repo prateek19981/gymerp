@@ -22,19 +22,14 @@ export const OrderDetailPage = () => {
   let membership = JSON.parse(
     sessionStorage.getItem("currentUser")
   ).memberships;
-  console.log({ currentUser });
-  console.log({ membership });
+
   let cartItems = orderss || currentUser?.cart;
-  console.log({ cartItems });
+
   const token = sessionStorage.getItem("Auth Token");
   const dispatch = useDispatch();
   function clickHandler() {
-    console.log("click");
     const auth = sessionStorage.getItem("Auth Token");
     const user = sessionStorage.getItem("currentUser");
-
-    console.log({ user });
-    console.log({ cartItems });
 
     dispatch(addMembershipToUser({ user, cartItems }));
 

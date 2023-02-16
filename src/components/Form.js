@@ -15,6 +15,8 @@ import { useState } from "react";
 import Button from "../components/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { register, addUser, login } from "../slice/userSlice/userSlice";
+import { DatePicker } from "@mui/x-date-pickers";
+
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -26,6 +28,9 @@ import { ToastContainer, toast } from "react-toastify";
 import { collection, addDoc } from "firebase/firestore";
 import db from "../firebase_setup/firebase";
 import { addUserToStore } from "../slice/userSlice/userSlice";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import { useRef } from "react";
 
 const Form = ({
   title,
@@ -42,42 +47,40 @@ const Form = ({
   const dispatch = useDispatch();
   const loading = useSelector((state) => state.users.loading);
   const error = useSelector((state) => state.users.error);
-  console.log({ loading });
-  console.log({ error });
+  const formRef = useRef();
+
   const [user, setUser] = useState({
     name: "",
     email: "",
     password: "",
     number: "",
     gender: "female",
+    role: "member",
+    adminId: "",
+    dob: "",
   });
-  console.log("form.js");
-  console.log("loc", location);
-  console.log(typeof handleAction);
+
   async function handleAction(type, state) {
-    console.log("clicked");
     const authentication = getAuth();
 
     if (type === "register") {
-      dispatch(addUserToStore(user))
-        .unwrap()
-        .then((res) => {
-          console.log({ res });
-          navigate("/profile");
-        })
-        .catch((err) => {
-          console.log({ err });
-        });
+      const valid = formRef.current.reportValidity();
+
+      if (valid) {
+        dispatch(addUserToStore(user))
+          .unwrap()
+          .then((res) => {
+            navigate("/profile");
+          })
+          .catch((err) => {});
+      }
     } else if (type === "login") {
-      console.log("login");
       dispatch(login(user))
         .unwrap()
         .then((res) => {
-          console.log({ res });
           navigate("/profile");
         })
         .catch((err) => {
-          console.log(err);
           toast.error(err);
         });
     }
@@ -108,7 +111,8 @@ const Form = ({
               gap: "20px",
             }}
             noValidate
-            autoComplete="off">
+            autoComplete="off"
+            ref={formRef}>
             <TextField
               id="name"
               label="Enter name"
@@ -151,6 +155,21 @@ const Form = ({
                 })
               }
             />
+            <TextField
+              id="date"
+              label="Birthday"
+              type="date"
+              defaultValue=""
+              sx={{ width: 220 }}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onChange={(e) => {
+                setUser((p) => {
+                  return { ...p, dob: e.target.value };
+                });
+              }}
+            />
             <FormLabel id="demo-radio-buttons-group-label">Gender</FormLabel>
             <RadioGroup
               aria-labelledby="demo-radio-buttons-group-label"
@@ -174,7 +193,35 @@ const Form = ({
                 label="Other"
               />
             </RadioGroup>
+            <Select
+              id="demo-simple-select"
+              value={user.role}
+              label="user"
+              onChange={(e) => {
+                setUser((p) => {
+                  return { ...p, role: e.target.value };
+                });
+              }}>
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="member">Member</MenuItem>
+            </Select>
+            {user.role === "member" && (
+              <TextField
+                required={true}
+                id="number"
+                style={{ width: "93%" }}
+                label="Enter Admin Id"
+                variant="outlined"
+                type="text"
+                onChange={(e) =>
+                  setUser((p) => {
+                    return { ...p, adminId: e.target.value };
+                  })
+                }
+              />
+            )}
           </Box>
+
           <Button
             title={title}
             handleAction={handleAction}

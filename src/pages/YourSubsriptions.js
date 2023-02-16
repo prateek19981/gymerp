@@ -8,6 +8,8 @@ import { useState } from "react";
 import { addMembershipToUser } from "../slice/userSlice/userSlice";
 import { ToastContainer, toast } from "react-toastify";
 import db from "../firebase_setup/firebase";
+import { getStartDate } from "../utils/getMembershipStartDate";
+import { getEndDate } from "../utils/getMembershipEndDate";
 export const YourSubsriptions = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,43 +20,40 @@ export const YourSubsriptions = () => {
   );
   console.log({ userMemberships });
 
-  function getStartDate() {
-    let utcSeconds = userMemberships?.orderDate?.seconds;
-    console.log({ utcSeconds });
-    console.log({ userMemberships });
-    let d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-    d.setUTCSeconds(utcSeconds);
-    d = d.toDateString();
-    console.log("start", d);
-    return d;
-  }
-  function getEndDate() {
-    let start = new Date(getStartDate());
-    const duration = userMemberships.duration;
-    let endDate;
-    if (duration === "monthly") {
-      endDate = new Date(start.setMonth(start.getMonth() + 1));
-    } else if (duration === "quarterly") {
-      endDate = new Date(start.setMonth(start.getMonth() + 3));
-    } else if (duration === "yearly") {
-      endDate = new Date(start.setMonth(start.getMonth() + 12));
-    }
-    return endDate?.toDateString();
-  }
+  // function getStartDate() {
+  //   let utcSeconds = userMemberships?.orderDate?.seconds;
+
+  //   let d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+  //   d.setUTCSeconds(utcSeconds);
+  //   d = d.toDateString();
+
+  //   return d;
+  // }
+  // function getEndDate() {
+  //   let start = new Date(getStartDate());
+  //   const duration = userMemberships.duration;
+  //   let endDate;
+  //   if (duration === "monthly") {
+  //     endDate = new Date(start.setMonth(start.getMonth() + 1));
+  //   } else if (duration === "quarterly") {
+  //     endDate = new Date(start.setMonth(start.getMonth() + 3));
+  //   } else if (duration === "yearly") {
+  //     endDate = new Date(start.setMonth(start.getMonth() + 12));
+  //   }
+  //   return endDate?.toDateString();
+  // }
 
   useEffect(() => {
     async function getData() {
-      console.log("here");
       let user = sessionStorage.getItem("currentUser");
       user = JSON.parse(user);
       const email = user.email;
       const data = await db.collection("user").doc(email).get();
-      console.log(data.data());
+
       const orderDate = getEndDate();
 
       let givenDate1 = new Date(orderDate);
       let diff = new Date().getTime() - givenDate1.getTime();
-      console.log({ diff });
 
       setUserMemberships(data.data().activeMemberships || {});
     }
@@ -66,7 +65,7 @@ export const YourSubsriptions = () => {
   const currentUser = useSelector((state) => state.users.currentUser);
 
   const cartItems = currentUser?.cart;
-  console.log({ cartItems });
+
   const token = sessionStorage.getItem("Auth Token");
   const dispatch = useDispatch();
 
@@ -100,13 +99,15 @@ export const YourSubsriptions = () => {
             </Stack>
 
             <Stack>
-              <Typography>Start Date: {getStartDate()} </Typography>
-              <Typography>End Date: {getEndDate()} </Typography>
+              <Typography>
+                Start Date: {getStartDate(userMemberships)}{" "}
+              </Typography>
+              <Typography>End Date: {getEndDate(userMemberships)} </Typography>
             </Stack>
           </Stack>
           <Alert severity="warning">
-            Your subscription is ending on {getEndDate()}, please renew to
-            continue enjoy benefits
+            Your subscription is ending on {getEndDate(userMemberships)}, please
+            renew to continue enjoy benefits
           </Alert>
           <Stack
             direction="row"

@@ -1,5 +1,6 @@
 export const checkUserIsAdmin = () => {
   let user = sessionStorage.getItem("currentUser");
+  console.log({ user });
   user = JSON.parse(user);
   let currentUser = user;
   console.log({ currentUser });
@@ -13,4 +14,8 @@ export const checkUserIsAdmin = () => {
     return true;
   }
   return false;
+};
+
+export const checkUserSignedIn = () => {
+  let user = sessionStorage.getItem("currentUser");
 };

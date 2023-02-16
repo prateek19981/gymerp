@@ -1,7 +1,13 @@
 import React from "react";
 import "./App.css";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import { Box } from "@mui/material";
+import { Layout } from "./pages/admin/Layout";
+import { Box, Stack } from "@mui/material";
+import Members from "./pages/admin/Members";
+import Memberships from "./pages/admin/Memberships";
+import Engage from "./pages/admin/Engage";
+import BusinessInsights from "./pages/admin/BusinessInsights";
+import Enquiries from "./pages/admin/Enquiries";
 import Home from "./pages/Home";
 import ExerciseDetail from "./pages/ExerciseDetail";
 import Navbar from "./components/Navbar";
@@ -18,18 +24,18 @@ import { YourOrders } from "./pages/YourOrders";
 import Dashboard from "./pages/admin/Dashboard";
 import spinner from "./assets/spinner.svg";
 import { AdminToolbar } from "./components/AdminToolbar";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
-} from "firebase/auth";
+import { Profile } from "./pages/admin/Profile";
 import WithAdminAuth from "./hoc/withAdminAuth";
 import { useDispatch, useSelector } from "react-redux";
 import { addMembership } from "./slice/membershipSlice/membershipSlice";
 import { addUser, login, logout } from "./slice/userSlice/userSlice";
 import ProfileNav from "./components/ProfileNav";
 import { YourSubsriptions } from "./pages/YourSubsriptions";
+import { SideNav } from "./pages/admin/SideNav";
+import { checkUserIsAdmin } from "./utils";
+import { Admin } from "./pages/admin/Layout";
+import { Outbound } from "@mui/icons-material";
+import AddMember from "./pages/admin/AddMember";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -38,16 +44,15 @@ function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loading = useSelector((state) => state.users.loading);
-  console.log({ loading });
+  const user = useSelector((state) => state.users);
 
   const handleLogout = () => {
     dispatch(logout());
-    console.log("here");
+
     navigate("/");
   };
 
   async function fetchMembership() {
-    console.log("insdie fetch");
     const response = db.collection("membership_data");
     const data = await response.get();
     const res = data.docs.map((item) => {
@@ -62,67 +67,90 @@ function App() {
     fetchMembership();
   }, []);
   return (
-    <Box sx={{ width: { xl: "100%", lg: "80%", md: "40%" } }}>
+    <>
       <AdminToolbar />
-      <Navbar isLoggedIn={isLoggedIn()} handleLogout={handleLogout} />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/exercise/:id" element={<ExerciseDetail />} />
-        <Route
-          path="/membership/:id"
-          element={<MembershipDetail isLoggedIn={isLoggedIn()} />}
-        />
-        <Route
-          path="/profile"
-          element={<UserProfile handleLogout={handleLogout} />}
-        />
-        <Route
-          path="/login"
-          element={
-            <Form
-              title="Login"
-              type="login"
-              setEmail={setEmail}
-              email={email}
-              password={password}
-              setPassword={setPassword}
-              name={name}
-              setName={setName}
-            />
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <Form
-              title="Register"
-              type="register"
-              setEmail={setEmail}
-              email={email}
-              password={password}
-              setPassword={setPassword}
-              name={name}
-              setName={setName}
-            />
-          }
-        />
-        <Route path="/orderDetail" element={<OrderDetailPage />} />
-        <Route path="/yourorders" element={<YourOrders />} />
-        <Route path="/subscriptions" element={<YourSubsriptions />} />
+      <Box
+        sx={{
+          width: {
+            xl: "100%",
+            lg: "100%",
+            md: "90%",
+            sm: "150%",
+          },
+          margin: "0 auto",
+        }}>
+        {<Navbar isLoggedIn={isLoggedIn()} handleLogout={handleLogout} />}
 
-        <Route
-          path="/admin/dashboard"
-          element={
-            <WithAdminAuth>
-              <Dashboard />
-            </WithAdminAuth>
-          }
-        />
-      </Routes>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/exercise/:id" element={<ExerciseDetail />} />
+          <Route
+            path="/membership/:id"
+            element={<MembershipDetail isLoggedIn={isLoggedIn()} />}
+          />
+          <Route
+            path="/profile"
+            element={<UserProfile handleLogout={handleLogout} />}
+          />
+          <Route
+            path="/login"
+            element={
+              <Form
+                title="Login"
+                type="login"
+                setEmail={setEmail}
+                email={email}
+                password={password}
+                setPassword={setPassword}
+                name={name}
+                setName={setName}
+              />
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <Form
+                title="Register"
+                type="register"
+                setEmail={setEmail}
+                email={email}
+                password={password}
+                setPassword={setPassword}
+                name={name}
+                setName={setName}
+              />
+            }
+          />
+          <Route path="/orderDetail" element={<OrderDetailPage />} />
+          <Route path="/yourorders" element={<YourOrders />} />
+          <Route path="/subscriptions" element={<YourSubsriptions />} />
 
-      <ToastContainer />
-    </Box>
+          <Route
+            path="/admin"
+            element={
+              <WithAdminAuth>
+                <Layout />
+              </WithAdminAuth>
+            }>
+            <Route path="members">
+              <Route path="allmembers" element={<Members />} />
+              <Route path="addmember" element={<AddMember />} />
+            </Route>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="profile" element={<Profile />} />
+
+            <Route path="memberships" element={<Memberships />} />
+            <Route path="engage" element={<Engage />} />
+            <Route path="businessinsights" element={<BusinessInsights />} />
+            <Route path="enquiries" element={<Enquiries />} />
+          </Route>
+        </Routes>
+
+        <ToastContainer />
+      </Box>
+    </>
   );
 }
 

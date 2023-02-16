@@ -5,7 +5,6 @@ export const membershipSlice = createSlice({
   initialState: [],
   reducers: {
     addMembership: (state, action) => {
-      console.log("acccc", action.payload);
       const membership = action.payload;
 
       return membership;

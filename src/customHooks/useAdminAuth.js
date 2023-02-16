@@ -8,10 +8,8 @@ const mapState = ({ users }) => {
     currentUser: users.currentUser,
   };
 };
-
 const useAdminAuth = (props) => {
   const currentUser = useSelector((state) => state.users);
-  console.log("hmm", currentUser);
   const navigate = useNavigate();
 
   useEffect(() => {

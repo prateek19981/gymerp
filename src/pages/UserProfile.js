@@ -22,10 +22,10 @@ const UserProfile = () => {
   let user = sessionStorage.getItem("currentUser");
   user = JSON.parse(user);
   const [currUser, setCurrUser] = useState(user);
-  console.log({ currUser });
+
 
   useEffect(() => {
-    console.log(token);
+
 
     if (!token) {
       navigate("/");
@@ -34,7 +34,7 @@ const UserProfile = () => {
     }
   }, [navigate, token]);
 
-  console.log(window.location);
+
 
   return (
     <Stack

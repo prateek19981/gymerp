@@ -7,7 +7,7 @@ import { padding } from "@mui/system";
 
 const Detail = ({ detailData }) => {
   const { bodyPart, gifUrl, name, target, equipment } = detailData;
-  console.log(gifUrl);
+ 
   const extra = [
     {
       icon: BodyPartImage,
