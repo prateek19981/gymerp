@@ -4,12 +4,8 @@ import { Box, Container, Stack } from "@mui/system";
 import { Button, Typography } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
-import {
-  addMembershipToUser,
-  addOrderToUser,
-} from "../slice/userSlice/userSlice";
-import { ToastContainer, toast } from "react-toastify";
+import { addMembershipToUser } from "../slice/userSlice/userSlice";
+import { toast } from "react-toastify";
 
 export const OrderDetailPage = () => {
   const navigate = useNavigate();
@@ -17,11 +13,9 @@ export const OrderDetailPage = () => {
 
   const allUsers = useSelector((state) => state.users);
   let currentUser = useSelector((state) => state.users.currentUser);
-  const user = sessionStorage.getItem("currentUser");
-  const orderss = JSON.parse(user).orders;
-  let membership = JSON.parse(
-    sessionStorage.getItem("currentUser")
-  ).memberships;
+  let user = useSelector((state) => state.users.currentUser);
+  const orderss = user.orders;
+  let membership = user.memberships;
 
   let cartItems = orderss || currentUser?.cart;
 
@@ -29,7 +23,6 @@ export const OrderDetailPage = () => {
   const dispatch = useDispatch();
   function clickHandler() {
     const auth = sessionStorage.getItem("Auth Token");
-    const user = sessionStorage.getItem("currentUser");
 
     dispatch(addMembershipToUser({ user, cartItems }));
 
@@ -43,12 +36,6 @@ export const OrderDetailPage = () => {
     }
   }, [navigate, location, token]);
 
-  // useEffect(() => {
-  //   const user2 = JSON.parse(sessionStorage.getItem("currentUser"));
-  //   cartItems = user2.orders;
-
-  //   console.log("ddddd", cartItems);
-  // }, []);
   return (
     <Container>
       <Box display="flex" flexDirection="column" height="100vh" mt="20px">

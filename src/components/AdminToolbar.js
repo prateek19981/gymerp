@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-import { checkUserIsAdmin } from "../utils";
+import { useCheckUserIsAdmin } from "../utils";
 import { Box } from "@mui/material";
 
 export const AdminToolbar = () => {
-  const isAdmin = checkUserIsAdmin();
+  const isAdmin = useCheckUserIsAdmin();
   console.log({ isAdmin });
   return (
     isAdmin && (

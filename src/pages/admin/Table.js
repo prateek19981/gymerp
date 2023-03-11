@@ -16,26 +16,13 @@ import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
-import { getStartDate } from "../../utils/getMembershipStartDate";
-import { getEndDate } from "../../utils/getMembershipEndDate";
-
-function createData(name, age, contact, membership, startDate, endDate) {
-  return {
-    name,
-    age,
-    contact,
-    membership,
-    startDate,
-    endDate,
-  };
-}
+import { getActiveMembers } from "../../utils/getActiveMembers";
 
 function descendingComparator(a, b, orderBy) {
+  console.log("a", a[orderBy]);
   if (b[orderBy] < a[orderBy]) {
     return -1;
   }
@@ -47,6 +34,7 @@ function descendingComparator(a, b, orderBy) {
 
 function getComparator(order, orderBy) {
   console.log("inside get comp", orderBy);
+  console.log({ order });
   return order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
@@ -89,6 +77,12 @@ const headCells = [
     label: "contact",
   },
   {
+    id: "joiningDate",
+    numeric: true,
+    disablePadding: false,
+    label: "joiningDate",
+  },
+  {
     id: "membership",
     numeric: true,
     disablePadding: false,
@@ -116,6 +110,7 @@ function EnhancedTableHead(props) {
     numSelected,
     rowCount,
     onRequestSort,
+    active,
   } = props;
   const createSortHandler = (property) => (event) => {
     console.log("inside create sort handler", property);
@@ -123,6 +118,7 @@ function EnhancedTableHead(props) {
     onRequestSort(event, property);
   };
 
+  console.log("inside enhanced header", active);
   return (
     <TableHead>
       <TableRow>
@@ -137,25 +133,37 @@ function EnhancedTableHead(props) {
             }}
           />
         </TableCell>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.numeric ? "right" : "left"}
-            padding={headCell.disablePadding ? "none" : "normal"}
-            sortDirection={orderBy === headCell.id ? order : false}>
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id)}>
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
+        {headCells.map((headCell) => {
+          if (
+            (headCell.id === "startDate" ||
+              headCell.id === "endDate" ||
+              headCell.id === "membership") &&
+            !active
+          ) {
+            return null;
+          }
+          return (
+            <TableCell
+              key={headCell.id}
+              align={headCell.numeric ? "right" : "left"}
+              padding={headCell.disablePadding ? "none" : "normal"}
+              sortDirection={orderBy === headCell.id ? order : false}>
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : "asc"}
+                onClick={createSortHandler(headCell.id)}>
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <Box component="span" sx={visuallyHidden}>
+                    {order === "desc"
+                      ? "sorted descending"
+                      : "sorted ascending"}
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            </TableCell>
+          );
+        })}
       </TableRow>
     </TableHead>
   );
@@ -225,20 +233,15 @@ EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 
-export default function EnhancedTable({ members }) {
+export default function EnhancedTable({ members, active }) {
+  console.log({ members });
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-
-  const [data, setData] = React.useState([]);
-  console.log({ data });
   console.log({ orderBy });
-  React.useEffect(() => {
-    console.log({ members });
-    setData(members);
-  }, []);
+  console.log({ active });
 
   const handleRequestSort = (event, property) => {
     console.log("Inside handle req", event);
@@ -250,7 +253,7 @@ export default function EnhancedTable({ members }) {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = data.map((n) => n.name);
+      const newSelected = members.map((n) => n.name);
       setSelected(newSelected);
       return;
     }
@@ -290,7 +293,7 @@ export default function EnhancedTable({ members }) {
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data?.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - members?.length) : 0;
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -307,10 +310,11 @@ export default function EnhancedTable({ members }) {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={data?.length}
+              rowCount={members?.length}
+              active={active}
             />
             <TableBody>
-              {stableSort(data, getComparator(order, orderBy))?.map(
+              {stableSort(members, getComparator(order, orderBy))?.map(
                 (row, index) => {
                   const isItemSelected = isSelected(row.name);
                   const labelId = `enhanced-table-checkbox-${index}`;
@@ -342,9 +346,22 @@ export default function EnhancedTable({ members }) {
                       </TableCell>
                       <TableCell align="right">{row.age}</TableCell>
                       <TableCell align="right">{row.contact}</TableCell>
-                      <TableCell align="right">{row.membership}</TableCell>
-                      <TableCell align="right">{row.startDate}</TableCell>
-                      <TableCell align="right">{row.endDate}</TableCell>
+                      <TableCell align="right">{row.joiningDate}</TableCell>
+                      {row?.activeMemberships?.name && (
+                        <TableCell align="right">
+                          {row?.activeMemberships?.name}
+                        </TableCell>
+                      )}
+                      {row?.activeMemberships?.startDate && (
+                        <TableCell align="right">
+                          {row?.activeMemberships?.startDate}
+                        </TableCell>
+                      )}
+                      {row?.activeMemberships?.endDate && (
+                        <TableCell align="right">
+                          {row?.activeMemberships?.endDate}
+                        </TableCell>
+                      )}
                     </TableRow>
                   );
                 }
@@ -363,7 +380,7 @@ export default function EnhancedTable({ members }) {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={data?.length}
+          count={members?.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

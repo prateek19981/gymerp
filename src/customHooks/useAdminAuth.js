@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { checkUserIsAdmin } from "../utils";
+import { useCheckUserIsAdmin } from "../utils";
 
 const mapState = ({ users }) => {
   return {
@@ -11,9 +11,10 @@ const mapState = ({ users }) => {
 const useAdminAuth = (props) => {
   const currentUser = useSelector((state) => state.users);
   const navigate = useNavigate();
+  let isAdmin = useCheckUserIsAdmin(currentUser);
 
   useEffect(() => {
-    if (!checkUserIsAdmin(currentUser)) {
+    if (!isAdmin) {
       navigate("/");
     }
   }, [currentUser, navigate]);

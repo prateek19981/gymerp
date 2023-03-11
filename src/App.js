@@ -36,6 +36,7 @@ import { checkUserIsAdmin } from "./utils";
 import { Admin } from "./pages/admin/Layout";
 import { Outbound } from "@mui/icons-material";
 import AddMember from "./pages/admin/AddMember";
+import ActiveMembers from "./pages/admin/ActiveMembers";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -44,7 +45,8 @@ function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loading = useSelector((state) => state.users.loading);
-  const user = useSelector((state) => state.users);
+  const state = useSelector((state) => state);
+  console.log("state", state);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -137,6 +139,7 @@ function App() {
             <Route path="members">
               <Route path="allmembers" element={<Members />} />
               <Route path="addmember" element={<AddMember />} />
+              <Route path="activemembers" element={<ActiveMembers />} />
             </Route>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="profile" element={<Profile />} />

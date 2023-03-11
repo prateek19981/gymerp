@@ -88,6 +88,16 @@ export const SideNav = () => {
                 </ListItemButton>
               </Link>
               <Link
+                to={`/admin/members/activemembers`}
+                style={{
+                  textDecoration: "none",
+                  color: "#3A1212",
+                }}>
+                <ListItemButton sx={{ pl: 4 }}>
+                  <ListItemText primary="Active Members" />
+                </ListItemButton>
+              </Link>
+              <Link
                 to={`/admin/members/addmember`}
                 style={{
                   textDecoration: "none",

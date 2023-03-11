@@ -17,8 +17,8 @@ const AddMember = () => {
   const dispatch = useDispatch();
   const memberships = useSelector((state) => state.memberships);
 
-  let user = sessionStorage.getItem("currentUser");
-  user = JSON.parse(user);
+  let user = useSelector((state) => state.users);
+
   const [planDetail, setPlanDetail] = useState({});
   console.log({ planDetail });
   function setPlanHandler(plan) {

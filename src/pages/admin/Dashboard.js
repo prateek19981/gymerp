@@ -17,10 +17,16 @@ import MembershipTab from "../../components/MembershipTab";
 
 import { Pie } from "react-chartjs-2";
 import { SideNav } from "./SideNav";
+import { useSelector } from "react-redux";
 
 const Dashboard = () => {
   ChartJS.register(ArcElement, Tooltip, Legend);
+
   const [tabVal, setTabVal] = useState(0);
+  let dashBoardData = useSelector((state) => state.users);
+  const { currentUser } = dashBoardData;
+  console.log({ dashBoardData });
+
   const data = {
     labels: ["earnings", "expenses"],
     datasets: [
@@ -38,6 +44,7 @@ const Dashboard = () => {
     console.log(val);
     setTabVal(val);
   }
+  const members = { dashBoardData };
   return (
     <Box display="flex" width="100%">
       <Stack direction="row" height="100%" width="100%">
@@ -83,7 +90,7 @@ const Dashboard = () => {
                   </i>
                 </Stack>
                 <Stack>
-                  <Typography>11</Typography>
+                  <Typography>{currentUser.activeMembers}</Typography>
                   <Typography>active members</Typography>
                 </Stack>
               </Stack>
@@ -252,7 +259,7 @@ const Dashboard = () => {
                   </i>
                 </Stack>
                 <Stack>
-                  <Typography>12</Typography>
+                  <Typography>{currentUser.totalMembers}</Typography>
                   <Typography>member present</Typography>
                 </Stack>
               </Stack>

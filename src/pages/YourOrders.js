@@ -2,12 +2,14 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Container, Stack } from "@mui/system";
 import { Button, Typography } from "@mui/material";
+import { useSelector } from "react-redux";
 
 export const YourOrders = () => {
   const navigate = useNavigate();
 
-  const user = sessionStorage.getItem("currentUser");
-  const orderss = JSON.parse(user)?.orders;
+  const user = useSelector((state) => state.users.currentUser);
+  console.log("user in order", user);
+  const orderss = user?.orders;
 
   const token = sessionStorage.getItem("Auth Token");
 

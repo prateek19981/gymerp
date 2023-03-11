@@ -18,6 +18,8 @@ import {
   arrayUnion,
   arrayRemove,
 } from "firebase/firestore";
+import { getStartDate } from "../../utils/getMembershipStartDate";
+import { getEndDate } from "../../utils/getMembershipEndDate";
 
 export const addUserToStore = createAsyncThunk(
   "user/register",
@@ -42,7 +44,7 @@ export const addUserToStore = createAsyncThunk(
       if (user.role === "admin") {
         user.userRoles.push("admin");
       }
-      sessionStorage.setItem("currentUser", JSON.stringify(user));
+
       await updateProfile(authentication.currentUser, {
         displayName: user.name,
       });
@@ -56,6 +58,7 @@ export const addUserToStore = createAsyncThunk(
           gender: user.gender,
           userRoles: user.userRoles,
           adminId: user.adminId,
+          joiningDate: new Date().toDateString(),
         });
       if (user.adminId) {
         let snap = await db.collection("user").doc(user.adminId).get();
@@ -77,6 +80,7 @@ export const addUserToStore = createAsyncThunk(
                 userRoles: user.userRoles,
                 adminId: user.adminId,
                 age,
+                joiningDate: new Date().toDateString(),
               }),
               totalMembers: existingMembers + 1,
             },
@@ -104,7 +108,7 @@ export const addUserByAdmin = createAsyncThunk(
     //   throw Error("age should be greator than 18");
     // }
     const { planDetail } = user;
-    console.log("inside async thunk by admin", planDetail);
+    console.log("inside async thunk by admin", user);
     try {
       const res = await createUserWithEmailAndPassword(
         authentication,
@@ -114,19 +118,25 @@ export const addUserByAdmin = createAsyncThunk(
       console.log({ user });
 
       user.age = age;
+      user.joiningDate = new Date(user.joiningDate).toDateString();
 
       user.userRoles = ["user"];
       if (user.role === "admin") {
         user.userRoles.push("admin");
       }
-      let currUser = sessionStorage.getItem("currentUser");
+      let currUser = sessionStorage.getItem("persist:currentUser");
+      currUser = JSON.parse(currUser).currentUser;
       currUser = JSON.parse(currUser);
       console.log("addbyadmin", currUser);
       user.adminId = currUser.email;
       let totalMembers = currUser?.members?.length || 1;
       let activeMembers = getActiveMembers(currUser);
       let totalActiveMembers = activeMembers?.length || 1;
-
+      let activeMemberships = { ...planDetail, orderDate: new Date() };
+      let startDate = getStartDate(activeMemberships);
+      let endDate = getEndDate(activeMemberships);
+      activeMemberships.startDate = startDate;
+      activeMemberships.endDate = endDate;
       await updateProfile(authentication.currentUser, {
         displayName: user.name,
       });
@@ -142,7 +152,7 @@ export const addUserByAdmin = createAsyncThunk(
           adminId: currUser.email,
           joiningDate: user.joiningDate,
           age: user.age,
-          activeMemberships: { ...planDetail, orderDate: new Date() },
+          activeMemberships,
           orders: [{ ...planDetail, orderDate: new Date() }],
         });
 
@@ -160,9 +170,10 @@ export const addUserByAdmin = createAsyncThunk(
               gender: user.gender,
               userRoles: user.userRoles,
               adminId: currUser.email,
-              activeMemberships: { ...planDetail, orderDate: new Date() },
+              activeMemberships,
               orders: [{ ...planDetail, orderDate: new Date() }],
               age: user.age,
+              joiningDate: user.joiningDate,
             }),
             totalMembers: totalMembers + 1,
             activeMembers: totalActiveMembers + 1,
@@ -207,7 +218,6 @@ export const login = createAsyncThunk(
       // sessionStorage.setItem("currentUser", JSON.stringify(activeUser));
       // const token = response._tokenResponse.refreshToken;
       sessionStorage.setItem("Auth Token", token);
-      sessionStorage.setItem("currentUser", JSON.stringify(res2));
       return res2;
     } catch (error) {
       console.log(error.code);
@@ -240,7 +250,7 @@ export const userSlice = createSlice({
       totalMembers: 0,
       activeMembers: 0,
     },
-    loading: true,
+    loading: false,
     error: false,
   },
 
@@ -251,7 +261,7 @@ export const userSlice = createSlice({
 
       return {
         ...state,
-        users: [...state.users, tempUser],
+        currentUser: tempUser,
       };
     },
     addToCart: (state, action) => {
@@ -330,18 +340,24 @@ export const userSlice = createSlice({
       let { cartItems } = action.payload;
       cartItems = cartItems || {};
 
-      let user = JSON.parse(action.payload.user);
-      console.log("user in red", user);
+      let user = action.payload.user;
       let adminId = user.adminId;
 
       const email = user.email;
       let order = user.orders || [];
-
+      let activeMemberships = {
+        ...(cartItems[0] || {}),
+        orderDate: new Date(),
+      };
+      let startDate = getStartDate(activeMemberships);
+      let endDate = getEndDate(activeMemberships);
+      activeMemberships.startDate = startDate;
+      activeMemberships.endDate = endDate;
       db.collection("user")
         .doc(email)
         .set({
           ...user,
-          activeMemberships: { ...(cartItems[0] || {}), orderDate: new Date() },
+          activeMemberships: activeMemberships,
           orders: [
             ...order,
             { ...(cartItems[0] || {}), orderDate: new Date() },
@@ -380,10 +396,7 @@ export const userSlice = createSlice({
                     gender: user.gender,
                     userRoles: user.userRoles,
                     adminId,
-                    activeMemberships: {
-                      ...(cartItems[0] || {}),
-                      orderDate: new Date(),
-                    },
+                    activeMemberships: activeMemberships,
                     orders: [
                       ...order,
                       { ...(cartItems[0] || {}), orderDate: new Date() },
@@ -399,26 +412,11 @@ export const userSlice = createSlice({
         .catch((error) => {
           console.error("Error writing document: ", error);
         });
-
-      sessionStorage.setItem(
-        "currentUser",
-        JSON.stringify({
-          ...user,
-          activeMemberships: {
-            ...(cartItems[0] || {}),
-            orderDate: new Date(),
-          },
-          orders: [...order, { ...cartItems[0], orderDate: new Date() }],
-        })
-      );
       return {
         ...state,
         currentUser: {
           ...user,
-          activeMemberships: {
-            ...(cartItems[0] || {}),
-            orderDate: new Date(),
-          },
+          activeMemberships,
           orders: [...order, { ...cartItems[0], orderDate: new Date() }],
         },
       };
@@ -443,19 +441,17 @@ export const userSlice = createSlice({
         .catch((error) => {
           console.error("Error writing document: ", error);
         });
-      const latestUser = await db.collection("user").doc(email).get();
-      sessionStorage.setItem("currentUser", JSON.stringify(latestUser.data()));
       return state;
     },
   },
   extraReducers(builder) {
     builder.addCase(addUserToStore.fulfilled, (state, action) => {
       console.log("action patyload", action.payload);
-      let user = sessionStorage.getItem("currentUser");
 
-      user = JSON.parse(user);
-
-      state.currentUser = user;
+      state.currentUser = {
+        ...action.payload,
+        joiningDate: new Date().toDateString(),
+      };
       state.loading = false;
       state.error = false;
       state.loading = false;
@@ -488,6 +484,12 @@ export const userSlice = createSlice({
       state.error = true;
       return state;
     });
+
+    builder.addCase(addUserByAdmin.pending, (state, action) => {
+      console.log("pending............", state);
+      console.log("pending............", action.payload);
+    });
+
     builder.addCase(addUserByAdmin.fulfilled, (state, action) => {
       console.log("here after fulfilled userbyadmin", action.payload);
       let addedUser = action.payload;
@@ -495,6 +497,10 @@ export const userSlice = createSlice({
         ...addedUser.planDetail,
         orderDate: new Date(),
       };
+      let startDate = getStartDate(addedUser.activeMemberships);
+      let endDate = getEndDate(addedUser.activeMemberships);
+      addedUser.activeMemberships.startDate = startDate;
+      addedUser.activeMemberships.endDate = endDate;
       addedUser.orders = [];
       addedUser.orders.push({
         ...addedUser.planDetail,
@@ -502,8 +508,10 @@ export const userSlice = createSlice({
       });
 
       // toast.error("age should be greator than 18");
-      let user = sessionStorage.getItem("currentUser");
-      user = JSON.parse(user);
+
+      let currUser = sessionStorage.getItem("persist:currentUser");
+      currUser = JSON.parse(currUser).currentUser;
+      let user = JSON.parse(currUser);
       console.log("uier in add", user);
       //       name(pin):"ser"
       // number(pin):"12345"
@@ -520,6 +528,7 @@ export const userSlice = createSlice({
         age: addedUser.age,
         activeMemberships: addedUser.activeMemberships,
         orders: addedUser.orders,
+        joiningDate: addedUser.joiningDate,
       };
       if (!user.members) {
         user.members = [];
@@ -534,8 +543,7 @@ export const userSlice = createSlice({
       user.activeMembers = activeMembers.length || 1;
       state.currentUser = user;
       console.log("uuu", user);
-
-      sessionStorage.setItem("currentUser", JSON.stringify(user));
+      toast.success("membership added");
 
       return state;
     });

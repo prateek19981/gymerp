@@ -8,8 +8,7 @@ const MembershipDetail = ({ isLoggedIn }) => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const membershipList = useSelector((state) => state.memberships);
-  let currUser = sessionStorage.getItem("currentUser");
-  currUser = JSON.parse(currUser);
+  let currUser = useSelector((state) => state.userslet);
   const activeMemberships = currUser?.activeMemberships || {};
 
   const membershipDetail = membershipList.find((item) => item.id === id);
@@ -17,7 +16,6 @@ const MembershipDetail = ({ isLoggedIn }) => {
   const handleAddToCart = function () {
     dispatch(addToCart({ membershipDetail, currUser }));
   };
-  const bool = Object.keys(activeMemberships).length !== 0;
 
   return (
     <Stack

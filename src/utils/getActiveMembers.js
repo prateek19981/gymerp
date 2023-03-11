@@ -15,14 +15,19 @@ function checkPastDate(date) {
 export const getActiveMembers = (user) => {
   const isAdmin = user.userRoles.includes("admin");
   if (!isAdmin) {
-    return 0;
+    return {};
   }
   const { members } = user;
+  console.log("mm", members);
   let activeMembers = {};
   activeMembers = members?.filter((item) => {
     const end = getEndDate(item.activeMemberships);
     console.log({ end });
-    return !checkPastDate(end);
+    return (
+      !checkPastDate(end) &&
+      item.activeMemberships &&
+      Object.keys(item.activeMemberships).length !== 0
+    );
   });
   console.log("active mmmm", activeMembers);
   return activeMembers;

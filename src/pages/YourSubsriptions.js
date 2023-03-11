@@ -13,8 +13,8 @@ import { getEndDate } from "../utils/getMembershipEndDate";
 export const YourSubsriptions = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  let user = sessionStorage.getItem("currentUser");
-  user = JSON.parse(user);
+
+  let user = useSelector((state) => state.users.currentUser);
   const [userMemberships, setUserMemberships] = useState(
     user?.activeMemberships
   );
@@ -45,8 +45,6 @@ export const YourSubsriptions = () => {
 
   useEffect(() => {
     async function getData() {
-      let user = sessionStorage.getItem("currentUser");
-      user = JSON.parse(user);
       const email = user.email;
       const data = await db.collection("user").doc(email).get();
 

@@ -1,40 +1,22 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  Button,
-  Drawer,
-  Box,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Divider,
-  Stack,
-  Typography,
-} from "@mui/material";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import MailIcon from "@mui/icons-material/Mail";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
+import { List, ListItem, ListItemText, Stack, Typography } from "@mui/material";
+
 import { useSelector } from "react-redux";
 const UserProfile = () => {
   const navigate = useNavigate();
   const token = sessionStorage.getItem("Auth Token");
-  let user = sessionStorage.getItem("currentUser");
-  user = JSON.parse(user);
+
+  let user = useSelector((state) => state.users.currentUser);
   const [currUser, setCurrUser] = useState(user);
 
-
   useEffect(() => {
-
-
     if (!token) {
       navigate("/");
     } else {
       navigate("/profile");
     }
   }, [navigate, token]);
-
-
 
   return (
     <Stack
